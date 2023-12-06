@@ -104,7 +104,88 @@ for (s in seeds) {
 
 min(finalloc)
 
+# part 2
+#seeds <- c(20, 5, 50, 4) # test
+
+udda <- seq(from=1, to = length(seeds), by =2)
+jamna <- seq(from=1, to = length(seeds))[-udda]
+
+udda
+jamna
+expand_seeds <- function(i) {
+  u <- seeds[udda][i]
+  .range <- seeds[jamna][i]-1
+
+  seq(from = u, to = u+.range)
+}
+
+length(seeds)/2
+expand_seeds(1)
+expand_seeds(2)
+
+x <-  map(1:(length(seeds)/2), expand_seeds)
+vec <- x[[1]]
+
+split_to_range <- function(vec) {
+  middle_ind <- (length(vec)/2)
+  left <- c(vec[1], vec[middle_ind])
+  right <- c(vec[middle_ind+1], vec[length(vec)])
+  c(left, right)
+}
+
+# TODO
+
+split_to_range(x[[1]])
 
 
 
 
+
+
+
+splitseed <- split_to_range(x[[1]])
+finalloc2 <- c()
+
+for (s in splitseed) {
+  # print(s)
+  currsource <- s
+
+  if (currsource == min(finalloc))
+
+
+  for (i in seq_along(lista)) {
+    print(str_glue("i={i} {n[i]} currsource: {currsource} s {s}"))
+
+    tmp <- lista[[i]]
+
+    mapmemory <- c()
+    for (j in seq_along(tmp)) {
+      #print(j)
+      inner <- tmp[[j]]
+      .range <- inner[3]-1
+
+      # a check here to speed up and ignore all that are not in range to begin with
+      if (dplyr::between(currsource, left = inner[2], right = inner[2]+.range)) {
+        print(str_glue("IN RANGE at {j}"))
+
+        sourceseq <- seq(from=inner[2], to=inner[2]+.range)
+        dest <- seq(from=inner[1], to=inner[1]+.range)
+
+        index <- which(sourceseq %in% currsource )
+        mapmemory <- dest[index]
+
+        #mapmemory <- get_map(inner)
+        break
+      }
+    }
+
+    if (is.null(mapmemory)) mapmemory <- currsource
+
+    #currsource <- get_dest(mapmemory, currsource)
+    currsource <- mapmemory
+    #print(str_glue("{n[i]} {currsource}"))
+  }
+
+  # print(str_glue("currsource: {currsource}"))
+  finalloc <- c(finalloc, currsource)
+}
