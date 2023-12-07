@@ -30,9 +30,13 @@ count_n <- function(x, n) {
 }
 
 
+chartable <- d$charvec |> map(table) |> bind_rows()
+
+
 
 chartable
 i <- 1
+
 resvec <- c()
 for (i in seq_len(nrow(chartable))) {
   tmp <- chartable[i,] |> select(where(~!is.na(.x)))
@@ -47,24 +51,73 @@ for (i in seq_len(nrow(chartable))) {
   resvec <- c(resvec, txt)
 }
 
+resvec
+d$kind <- resvec
+
+d |> View()
+
+d$kind |> unique()
+kinds <- c("high card", "one pair", "two pair", "three of a kind",
+  "full house", "four of a kind", "five of a kind")
 
 
+kinds
+d
+tmp <- d |> filter(kind==kinds[1])
+tmp[1:2,]$charvec
 
-chartable <- map(d$charvec, table) |> bind_rows()
-help(package="dplyr")
-chartable |>
-  filter(if_any(.cols = everything(), .fns = ~ .x == 5))
+get_minimum <- function(.charvec, n=1) {
+  x <- .charvec |> map(n) |> unlist() |> str_replace_all(
+    c("T"="10", "J"="11", "Q"="12", "K"="13", "A"="14")
+  ) |> as.numeric()
 
-chartable |>
-  mutate(x = if_any(.cols = everything(), .fns = ~ .x == 5) ))
+  .charvec[which(x==min(x))]
+}
+#
+# to_num <- tmp$charvec |> map(2) |> unlist() |> str_replace_all(
+#   c("T"="10", "J"="11", "Q"="12", "K"="13", "A"="14")
+# ) |> as.numeric()
+#
+# which(to_num==min(to_num))
 
-chartable |>
-  mutate(across(everything(), ))
+get_minimum(tmp$charvec) |>
+  get_minimum(n=2)
 
-# d |>
-#   bind_cols(chartable) |>
-#   mutate(across(-c(name,card,bid,chavec),
-#                 ~
-#                 ))
+length(curr_vec)
+
+curr_vec |> get_minimum(2) |> length()
+
+
+#currrank <- 1
+cardsorted <- c()
+for (k in kinds) {
+  tmp <- d |> filter(kind==k)
+  #print(tmp)
+
+
+  # while
+  tmp |> filter(charvec != cardsorted)
+  curr_vec <- tmp$charvec
+  map2(tmp$charvec, cardsorted, setdiff)
+  setdiff(cardsorted, tmp$charvec)
+
+  cardsorted
+
+  for (i in 1:5) {
+    curr_vec <- get_minimum(curr_vec, i)
+    #print(curr_vec)
+
+    if (length(curr_vec)==1) {
+      cardsorted <- c(cardsorted, curr_vec)
+      print(str_glue("added {curr_vec}"))
+      currrank <- currrank+1
+      break
+
+    }
+  }
+
+}
+
+
 
 
