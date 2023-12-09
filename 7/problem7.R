@@ -51,20 +51,12 @@ for (i in seq_len(nrow(chartable))) {
   resvec <- c(resvec, txt)
 }
 
-resvec
 d$kind <- resvec
 
-d |> View()
 
-d$kind |> unique()
 kinds <- c("high card", "one pair", "two pair", "three of a kind",
   "full house", "four of a kind", "five of a kind")
 
-
-kinds
-d
-tmp <- d |> filter(kind==kinds[1])
-tmp[1:2,]$charvec
 
 get_minimum <- function(.charvec, n=1) {
   x <- .charvec |> map(n) |> unlist() |> str_replace_all(
@@ -80,44 +72,153 @@ get_minimum <- function(.charvec, n=1) {
 #
 # which(to_num==min(to_num))
 
-get_minimum(tmp$charvec) |>
-  get_minimum(n=2)
+# get_minimum(tmp$charvec) |>
+#   get_minimum(n=2)
+#
+# length(curr_vec)
+#
+# curr_vec |> get_minimum(2) |> length()
 
-length(curr_vec)
 
-curr_vec |> get_minimum(2) |> length()
+#k <- 1
+tmp <- d %>% filter(kind == kinds[1])
 
-
-#currrank <- 1
 cardsorted <- c()
 for (k in kinds) {
   tmp <- d |> filter(kind==k)
   #print(tmp)
+  while (nrow(tmp) > 0) {
+    curr_vec <- tmp$charvec
+    for (i in 1:5) {
+      curr_vec <- get_minimum(curr_vec, i)
+      #print(curr_vec)
 
+      if (length(curr_vec)==1) {
+        curr_vec <- str_c(curr_vec[[1]],collapse="")
+        cardsorted <- c(cardsorted, curr_vec)
+        print(str_glue("added {curr_vec}"))
+        #currrank <- currrank+1
+        break
 
-  # while
-  tmp |> filter(charvec != cardsorted)
-  curr_vec <- tmp$charvec
-  map2(tmp$charvec, cardsorted, setdiff)
-  setdiff(cardsorted, tmp$charvec)
-
-  cardsorted
-
-  for (i in 1:5) {
-    curr_vec <- get_minimum(curr_vec, i)
-    #print(curr_vec)
-
-    if (length(curr_vec)==1) {
-      cardsorted <- c(cardsorted, curr_vec)
-      print(str_glue("added {curr_vec}"))
-      currrank <- currrank+1
-      break
-
+      }
     }
+    tmp <- tmp %>% filter(card!=curr_vec)
   }
+}
 
+d
+xx <- enframe(cardsorted, name="rank", value="card") %>%
+  left_join(d %>% select(card,bid), by = "card") %>%
+  mutate(prod=rank*bid)
+sum(xx$prod)
+
+
+# -------------------------
+# PART 2
+
+to_num <- function(s) {
+  str_replace_all(s,c("T"="10", "Q"="12", "K"="13", "A"="14"))
+}
+to_char <- function(s) {
+  str_replace_all(s,c("10"="T", "12"="Q", "13"="K", "14"="A"))
+}
+get_max_char <- function(.charvec) {
+  y <- to_num(names(.charvec)[names(.charvec)!="J"])
+  to_char(y[which(y==max(as.numeric(y)))])
 }
 
 
+classify <- function(.charvec) {
+  txt <- ""
+  if (count_n(.charvec, "5")==1) txt <- "five of a kind"
+  if (count_n(.charvec, "4")==1) txt <- "four of a kind"
+  if (count_n(.charvec, "3")==1 & count_n(.charvec, "2")==1 ) txt <- "full house"
+  if (count_n(.charvec, "3")==1 & count_n(.charvec, "1")==2 ) txt <- "three of a kind"
+  if (count_n(.charvec, "2")==2) txt <- "two pair"
+  if (count_n(.charvec, "2")==1 & count_n(.charvec, "1") == 3) txt <- "one pair"
+  if (count_n(.charvec, "1")==5) txt <- "high card"
+  txt
+}
+
+d %>% mutate(x=str_count(card,"J")) %>% filter(x==3)
+d %>% mutate(x=str_count(card,"J")) %>% filter(kind=="four of a kind" & x>0)
+d %>% mutate(x=str_count(card,"J")) %>% filter(kind=="three of a kind" & x==3)
+d %>% mutate(x=str_count(card,"J")) %>% filter(kind=="two pair" & x>1)
+d %>% mutate(x=str_count(card,"J")) %>% filter(kind=="one pair" & x==2)
+d %>% mutate(x=str_count(card,"J")) %>% filter(kind=="one pair" & x==1)
+d %>% mutate(x=str_count(card,"J")) %>% filter(kind=="high card")
+
+i <- 102
+resvec <- c()
+for (i in seq_len(nrow(chartable))) {
+  tmp <- chartable[i,] |> select(where(~!is.na(.x)))
+  txt <- classify(tmp)
+
+  if (any(names(tmp)=="J")) {
+    num_j <- tmp[names(tmp)=="J"][[1]]
+
+    if (txt=="four of a kind")  txt <- "five of a kind"
+    else if (txt=="full house") txt <- "five of a kind"
+    else if (txt=="three of a kind") txt <- "four of a kind"
+    else if (txt=="two pair" & num_j==1) txt <- "full house"
+    else if (txt=="two pair" & num_j==2) txt <- "four of a kind"
+    else if (txt=="one pair" & num_j==1) txt <- "three of a kind"
+    else if (txt=="one pair" & num_j==2) txt <- "one pair"
+    else if (txt=="high card") txt <- "one pair"
+  }
+
+  resvec <- c(resvec, txt)
+}
+
+d$kind2 <- resvec
 
 
+get_minimum2 <- function(.charvec, n=1) {
+  x <- .charvec |> map(n) |> unlist() |> str_replace_all(
+    c("T"="10", "J"="1", "Q"="12", "K"="13", "A"="14")
+  ) |> as.numeric()
+
+  .charvec[which(x==min(x))]
+}
+
+tmp <- d %>% filter(kind == kinds[4])
+
+
+
+
+cardsorted2 <- c()
+for (k in kinds) {
+  tmp <- d |> filter(kind==k)
+  #print(tmp)
+  while (nrow(tmp) > 0) {
+    curr_vec <- tmp$charvec
+    for (i in 1:5) {
+      curr_vec <- get_minimum2(curr_vec, i)
+      #print(curr_vec)
+
+      if (length(curr_vec)==1) {
+        curr_vec <- str_c(curr_vec[[1]],collapse="")
+        cardsorted2 <- c(cardsorted2, curr_vec)
+        print(str_glue("added {curr_vec}"))
+        #currrank <- currrank+1
+        break
+
+      }
+    }
+    tmp <- tmp %>% filter(card!=curr_vec)
+  }
+}
+
+cardsorted2
+cardsorted
+
+xx2 <- enframe(cardsorted2, name="rank", value="card") %>%
+  left_join(d %>% select(card,bid), by = "card") %>%
+  mutate(prod=rank*bid)
+
+xx2 %>%
+  left_join(xx, by= "card") %>% View()
+
+sum(xx2$prod)
+
+#254424709
