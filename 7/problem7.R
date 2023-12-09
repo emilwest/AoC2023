@@ -15,24 +15,15 @@ d
 # One pair, where two cards share one label, and the other three cards have a different label from the pair and each other: A23A4
 # High card, where all cards' labels are distinct: 23456
 
-str_unique(c("c", "c", "b")) |> str_count()
-
 d <- d |>
   mutate(charvec = str_split(card, ""))
-  # mutate(highcard = map(charvec, ~ str_unique(.x) |> table()
-  #                       ))
-  #
-
 
 count_n <- function(x, n) {
   a <- x |> unlist() |> str_count(n)
   length(a[which(a==1)])
 }
 
-
 chartable <- d$charvec |> map(table) |> bind_rows()
-
-
 
 chartable
 i <- 1
@@ -53,7 +44,6 @@ for (i in seq_len(nrow(chartable))) {
 
 d$kind <- resvec
 
-
 kinds <- c("high card", "one pair", "two pair", "three of a kind",
   "full house", "four of a kind", "five of a kind")
 
@@ -65,19 +55,6 @@ get_minimum <- function(.charvec, n=1) {
 
   .charvec[which(x==min(x))]
 }
-#
-# to_num <- tmp$charvec |> map(2) |> unlist() |> str_replace_all(
-#   c("T"="10", "J"="11", "Q"="12", "K"="13", "A"="14")
-# ) |> as.numeric()
-#
-# which(to_num==min(to_num))
-
-# get_minimum(tmp$charvec) |>
-#   get_minimum(n=2)
-#
-# length(curr_vec)
-#
-# curr_vec |> get_minimum(2) |> length()
 
 
 #k <- 1
@@ -117,10 +94,10 @@ sum(xx$prod)
 # PART 2
 
 to_num <- function(s) {
-  str_replace_all(s,c("T"="10", "Q"="12", "K"="13", "A"="14"))
+  str_replace_all(s,c("T"="10", "Q"="12", "K"="13", "A"="14", "J"="1"))
 }
 to_char <- function(s) {
-  str_replace_all(s,c("10"="T", "12"="Q", "13"="K", "14"="A"))
+  str_replace_all(s,c("10"="T", "12"="Q", "13"="K", "14"="A", "1"="J"))
 }
 get_max_char <- function(.charvec) {
   y <- to_num(names(.charvec)[names(.charvec)!="J"])
@@ -148,7 +125,7 @@ d %>% mutate(x=str_count(card,"J")) %>% filter(kind=="one pair" & x==2)
 d %>% mutate(x=str_count(card,"J")) %>% filter(kind=="one pair" & x==1)
 d %>% mutate(x=str_count(card,"J")) %>% filter(kind=="high card")
 
-i <- 102
+# i <- 102
 resvec <- c()
 for (i in seq_len(nrow(chartable))) {
   tmp <- chartable[i,] |> select(where(~!is.na(.x)))
@@ -162,8 +139,8 @@ for (i in seq_len(nrow(chartable))) {
     else if (txt=="three of a kind") txt <- "four of a kind"
     else if (txt=="two pair" & num_j==1) txt <- "full house"
     else if (txt=="two pair" & num_j==2) txt <- "four of a kind"
-    else if (txt=="one pair" & num_j==1) txt <- "three of a kind"
-    else if (txt=="one pair" & num_j==2) txt <- "one pair"
+    else if (txt=="one pair") txt <- "three of a kind"
+    #else if (txt=="one pair" & num_j==2) txt <- "one pair"
     else if (txt=="high card") txt <- "one pair"
   }
 
@@ -181,20 +158,21 @@ get_minimum2 <- function(.charvec, n=1) {
   .charvec[which(x==min(x))]
 }
 
-tmp <- d %>% filter(kind == kinds[4])
+# tmp <- d %>% filter(kind2 == kinds[1])
 
 
 
 
 cardsorted2 <- c()
 for (k in kinds) {
-  tmp <- d |> filter(kind==k)
+  tmp <- d |> filter(kind2==k)
   #print(tmp)
+
   while (nrow(tmp) > 0) {
     curr_vec <- tmp$charvec
+    i <- 1
     for (i in 1:5) {
       curr_vec <- get_minimum2(curr_vec, i)
-      #print(curr_vec)
 
       if (length(curr_vec)==1) {
         curr_vec <- str_c(curr_vec[[1]],collapse="")
@@ -216,9 +194,6 @@ xx2 <- enframe(cardsorted2, name="rank", value="card") %>%
   left_join(d %>% select(card,bid), by = "card") %>%
   mutate(prod=rank*bid)
 
-xx2 %>%
-  left_join(xx, by= "card") %>% View()
 
 sum(xx2$prod)
-
-#254424709
+# 254412181
