@@ -190,6 +190,7 @@ furthestpoint
 # https://en.wikipedia.org/wiki/Shoelace_formula
 # https://artofproblemsolving.com/wiki/index.php/Shoelace_Theorem
 
+# starting point must be included twice in shoelace
 XX <- restib %>% bind_rows(restib %>% slice(1))
 
 area <- 0
@@ -205,7 +206,7 @@ area <- abs(area)
 
 
 # Picks theorem: https://en.wikipedia.org/wiki/Pick%27s_theorem
-# THe are of polygon A =
+# THe area of polygon A =
 # interior points + boundary points/2 -1
 # A = i + b / 2 - 1
 # so
