@@ -9,12 +9,10 @@ library(tidyverse)
 ascii <- read_csv2("15/ascii.csv", col_types = cols(.default = "c"))
 ascii <- ascii |> select(code=dec, char=`67`) |> mutate(char=str_replace(char, "space", " "))
 
-ascii
-
 input <- readLines("15/input")
-input <- "rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7"
-strsplit(input, ",")
-get_ascii("1")
+# input <- "rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7"
+chars <- input |> str_split_1(",")
+
 
 # Determine the ASCII code for the current character of the string.
 # Increase the current value by the ASCII code you just determined.
@@ -35,15 +33,6 @@ calc_ascii <- function(.char, value) {
   return(value)
 }
 
-get_ascii("H") |> calc_ascii(0)
-
-resvec <- 0
-for (char in c("H","A","S","H")) {
-  resvec <- calc_ascii(char, resvec)
-  print(resvec)
-}
-resvec
-
 calc_hash <- function(.chars) {
   resvec <- 0
   for (char in .chars) {
@@ -53,15 +42,17 @@ calc_hash <- function(.chars) {
   resvec
 }
 
-chars <- input |> str_split_1(",")
-str_split_1(chars[1],"") |> calc_hash()
-str_split_1(chars[2],"") |> calc_hash()
-calc_hash(chars[1])
-
 
 summa <- chars |>
   str_split("") |>
   map(calc_hash) |>
   unlist() |> sum()
 summa
+
+
+# part 2
+
+
+chars |>
+  str_split("")
 
