@@ -1,15 +1,12 @@
 library(tidyverse)
 
-dat <- readLines("2024/1/input.txt")
-v <- dat[-1] |> str_split("\\s+") %>%  map(as.numeric)
+dat <- readLines("2024/1/input.txt")[-1] %>% str_split("\\s+") %>% map(as.numeric)
 
 v1 <- v %>% map(~.x[1]) %>% unlist()
 v2 <- v %>% map(~.x[2]) %>% unlist()
 
 # part1
-tibble(a=sort(v1), b=sort(v2)) %>%
-  mutate(d = abs(a-b)) %>%
-  summarise(sum(d))
+sum(abs(sort(v1)-sort(v2)))
 
 # part2
 tibble(a=v1, b=v2) %>%
